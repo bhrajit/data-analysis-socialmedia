@@ -1,0 +1,809 @@
+---
+title: "FinalBigTech"
+author: "Bhrajit Thakur"
+date: "12/1/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# pacman::p_load(haven, dplyr, tidyverse, stargazer, sandwich, lmtest, MASS, ggplot2, gridExtra)
+pacman::p_load(haven, dplyr, tidyverse, stargazer, sandwich, ggplot2, lmtest)
+```
+
+```{r}
+priv <- read_dta("31114991.DTA")
+
+attributes(priv$PRIV1)
+# facebook
+attributes(priv$PRIV2A)
+#code if you have an account
+priv$facebookUse[priv$PRIV2A > 0] <- 1
+priv$facebookUse[priv$PRIV2A == 7] <- 0
+priv$facebookUse[priv$PRIV2A == 99] <- NA
+# code, you have an account, now look at usage
+priv$facebookUse.re[priv$PRIV2A == 1] <- 1
+priv$facebookUse.re[priv$PRIV2A == 2] <- 4/5
+priv$facebookUse.re[priv$PRIV2A == 3] <- 3/5
+priv$facebookUse.re[priv$PRIV2A == 4] <- 2/5
+priv$facebookUse.re[priv$PRIV2A == 5] <- 1/5
+priv$facebookUse.re[priv$PRIV2A == 6] <- 0
+```
+
+
+```{r}
+attributes(priv$PRIV2A)
+table(priv$PRIV2A)
+priv$facebookUse.f <- NA
+priv$facebookUse.f[priv$PRIV2A == 1] <- "Almost constantly"
+priv$facebookUse.f[priv$PRIV2A == 2] <- "Several times a day"
+priv$facebookUse.f[priv$PRIV2A == 3] <- "Once a day"
+priv$facebookUse.f[priv$PRIV2A == 4] <- "At least once a week"
+priv$facebookUse.f[priv$PRIV2A == 5] <- "Less often"
+priv$facebookUse.f[priv$PRIV2A == 6] <- "Never"
+
+```
+
+```{r}
+# twitter
+
+priv$twitterUse[priv$PRIV2B > 0] <- 1
+priv$twitterUse[priv$PRIV2B == 7] <- 0
+priv$twitterUse[priv$PRIV2B == 99] <- NA
+
+priv$twitterUse.re[priv$PRIV2B == 1] <- 1
+priv$twitterUse.re[priv$PRIV2B == 2] <- 4/5
+priv$twitterUse.re[priv$PRIV2B == 3] <- 3/5
+priv$twitterUse.re[priv$PRIV2B == 4] <- 2/5
+priv$twitterUse.re[priv$PRIV2B == 5] <- 1/5
+priv$twitterUse.re[priv$PRIV2B == 6] <- 0
+
+priv$twitterUse.f <- NA
+priv$twitterUse.f[priv$PRIV2B == 1] <- "Almost constantly"
+priv$twitterUse.f[priv$PRIV2B == 2] <- "Several times a day"
+priv$twitterUse.f[priv$PRIV2B == 3] <- "Once a day"
+priv$twitterUse.f[priv$PRIV2B == 4] <- "At least once a week"
+priv$twitterUse.f[priv$PRIV2B == 5] <- "Less often"
+priv$twitterUse.f[priv$PRIV2B == 6] <- "Never"
+
+```
+
+```{r}
+# instagram
+
+
+priv$instaUse[priv$PRIV2C > 0] <- 1
+priv$instaUse[priv$PRIV2C == 7] <- 0
+priv$instaUse[priv$PRIV2C == 99] <- NA
+
+priv$instaUse.re[priv$PRIV2C == 1] <- 1
+priv$instaUse.re[priv$PRIV2C == 2] <- 4/5
+priv$instaUse.re[priv$PRIV2C == 3] <- 3/5
+priv$instaUse.re[priv$PRIV2C == 4] <- 2/5
+priv$instaUse.re[priv$PRIV2C == 5] <- 1/5
+priv$instaUse.re[priv$PRIV2C == 6] <- 0
+
+priv$instaUse.f[priv$PRIV2C == 1] <- "Almost constantly"
+priv$instaUse.f[priv$PRIV2C == 2] <- "Several times a day"
+priv$instaUse.f[priv$PRIV2C == 3] <- "Once a day"
+priv$instaUse.f[priv$PRIV2C == 4] <- "At least once a week"
+priv$instaUse.f[priv$PRIV2C == 5] <- "Less often"
+priv$instaUse.f[priv$PRIV2C == 6] <- "Never"
+
+```
+
+```{r}
+# snapchat
+
+priv$snapUse[priv$PRIV2D > 0] <- 1
+priv$snapUse[priv$PRIV2D == 7] <- 0
+priv$snapUse[priv$PRIV2D == 99] <- NA
+
+priv$snapUse.re[priv$PRIV2D == 1] <- 1
+priv$snapUse.re[priv$PRIV2D == 2] <- 4/5
+priv$snapUse.re[priv$PRIV2D == 3] <- 3/5
+priv$snapUse.re[priv$PRIV2D == 4] <- 2/5
+priv$snapUse.re[priv$PRIV2D == 5] <- 1/5
+priv$snapUse.re[priv$PRIV2D == 6] <- 0
+
+priv$snapUse.f <- NA
+priv$snapUse.f[priv$PRIV2D == 1] <- "Almost constantly"
+priv$snapUse.f[priv$PRIV2D == 2] <- "Several times a day"
+priv$snapUse.f[priv$PRIV2D == 3] <- "Once a day"
+priv$snapUse.f[priv$PRIV2D == 4] <- "At least once a week"
+priv$snapUse.f[priv$PRIV2D == 5] <- "Less often"
+priv$snapUse.f[priv$PRIV2D == 6] <- "Never"
+
+```
+
+```{r}
+# whataspp
+
+priv$whatsUse[priv$PRIV2E > 0] <- 1
+priv$whatsUse[priv$PRIV2E == 7] <- 0
+priv$whatsUse[priv$PRIV2E == 99] <- NA
+
+priv$whatsUse.re[priv$PRIV2E == 1] <- 1
+priv$whatsUse.re[priv$PRIV2E == 2] <- 4/5
+priv$whatsUse.re[priv$PRIV2E == 3] <- 3/5
+priv$whatsUse.re[priv$PRIV2E == 4] <- 2/5
+priv$whatsUse.re[priv$PRIV2E == 5] <- 1/5
+priv$whatsUse.re[priv$PRIV2E == 6] <- 0
+
+priv$whatsUse.f <- NA
+priv$whatsUse.f[priv$PRIV2E == 1] <- "Almost constantly"
+priv$whatsUse.f[priv$PRIV2E == 2] <- "Several times a day"
+priv$whatsUse.f[priv$PRIV2E == 3] <- "Once a day"
+priv$whatsUse.f[priv$PRIV2E == 4] <- "At least once a week"
+priv$whatsUse.f[priv$PRIV2E == 5] <- "Less often"
+priv$whatsUse.f[priv$PRIV2E == 6] <- "Never"
+```
+```{r}
+# reddit
+
+priv$redditUse[priv$PRIV2F > 0] <- 1
+priv$redditUse[priv$PRIV2F == 7] <- 0
+priv$redditUse[priv$PRIV2F == 99] <- NA
+
+priv$redditUse.re[priv$PRIV2F == 1] <- 1
+priv$redditUse.re[priv$PRIV2F == 2] <- 4/5
+priv$redditUse.re[priv$PRIV2F == 3] <- 3/5
+priv$redditUse.re[priv$PRIV2F == 4] <- 2/5
+priv$redditUse.re[priv$PRIV2F == 5] <- 1/5
+priv$redditUse.re[priv$PRIV2F == 6] <- 0
+
+priv$redditUse.f <- NA
+priv$redditUse.f[priv$PRIV2F == 1] <- "Almost constantly"
+priv$redditUse.f[priv$PRIV2F == 2] <- "Several times a day"
+priv$redditUse.f[priv$PRIV2F == 3] <- "Once a day"
+priv$redditUse.f[priv$PRIV2F == 4] <- "At least once a week"
+priv$redditUse.f[priv$PRIV2F == 5] <- "Less often"
+priv$redditUse.f[priv$PRIV2F == 6] <- "Never"
+
+
+priv$numberOfAccounts <- NA
+priv$numberOfAccounts<- priv$facebookUse + priv$twitterUse + priv$snapUse + priv$whatsUse + priv$instaUse + priv$redditUse
+
+table(priv$numberOfAccounts)
+
+
+```
+Recode into factors
+```{r}
+priv$facebookUse.f.f <- as.factor(priv$facebookUse.f)
+priv$twitterUse.f.f <- as.factor(priv$twitterUse.f)
+priv$snapUse.f.f <- as.factor(priv$snapUse.f)
+priv$whatsUse.f.f <- as.factor(priv$whatsUse.f)
+priv$instaUse.f.f <- as.factor(priv$instaUse.f)
+priv$redditUse.f.f <- as.factor(priv$redditUse.f)
+```
+```{r}
+#Has Social Media is the average number of accounts
+hasSocialMedia<- priv %>% dplyr::select(facebookUse, twitterUse, instaUse, snapUse, whatsUse, redditUse)
+#social Media Usage is the average usage across six different social media platforms
+socialMediaUsage <- priv %>% dplyr::select(facebookUse.re, twitterUse.re, instaUse.re, snapUse.re, whatsUse.re, redditUse.re)
+socialMediaUsage.small <- priv %>% dplyr::select(facebookUse.re, twitterUse.re, instaUse.re, snapUse.re)
+
+rowMeans(hasSocialMedia, na.rm=TRUE)
+rowMeans(socialMediaUsage, na.rm=TRUE)
+rowMeans(socialMediaUsage.small, na.rm=TRUE)
+
+# averages if they have a social media account accross platforms
+priv$hasSocialMedia<-NA
+priv$hasSocialMedia<-rowMeans(hasSocialMedia,na.rm=TRUE)
+
+priv$socialMediaUsage<-NA
+priv$socialMediaUsage<-rowMeans(socialMediaUsage,na.rm=TRUE)
+
+priv$socialMediaUsage.small<-NA
+priv$socialMediaUsage.small<-rowMeans(socialMediaUsage.small,na.rm=TRUE)
+
+# summary(priv$hasSocialMedia)
+```
+Cambridge Analytica Control
+```{r}
+priv$cambridgeAnalytica <- NA
+attributes(priv$PRIV8)
+priv$cambridgeAnalytica[priv$PRIV8 == 4 | priv$PRIV8 == 99] <- 0
+priv$cambridgeAnalytica[priv$PRIV8 == 3] <- 1/3
+priv$cambridgeAnalytica[priv$PRIV8 == 2] <- 2/3
+priv$cambridgeAnalytica[priv$PRIV8 == 1] <- 1
+```
+```{r}
+attributes(priv$PRIV10C)
+
+priv$responsibilitySM[priv$PRIV10C == 5] <- 0
+priv$responsibilitySM[priv$PRIV10C == 4] <- 1/4
+priv$responsibilitySM[priv$PRIV10C == 3] <- 2/4
+priv$responsibilitySM[priv$PRIV10C == 2] <- 3/4
+priv$responsibilitySM[priv$PRIV10C == 1] <- 1
+```
+
+```{r}
+attributes(priv$PRIV3C)
+# securing personal info
+#2. Thinking about your data, such as email, photos, and other files that you put on the Internet...How concerned are you that companies that provide these services would...not properly secure your personal information?...Extremely concerned, very concerned, moderately concerned, not very concerned, not at all concerned
+priv$securingPersonalInfo[priv$PRIV3C == 5] <- 0
+priv$securingPersonalInfo[priv$PRIV3C == 4] <- 1/4
+priv$securingPersonalInfo[priv$PRIV3C == 3] <- 2/4
+priv$securingPersonalInfo[priv$PRIV3C == 2] <- 3/4
+priv$securingPersonalInfo[priv$PRIV3C == 1] <- 1
+
+priv$securingPersonalInfo.re[priv$PRIV3C == 5 | priv$PRIV3C == 4] <- 0
+priv$securingPersonalInfo.re[priv$PRIV3C == 3 | priv$PRIV3C == 2 | priv$PRIV3C == 1] <- 1
+
+# how worried are you about the federal govt having access to ur data
+# [1] "PRIV4B: [The U.S. government] How concerned are you that some of the information"
+priv$worriedAboutFed[priv$PRIV4B == 5] <- 0
+priv$worriedAboutFed[priv$PRIV4B == 4] <- 1/4
+priv$worriedAboutFed[priv$PRIV4B == 3] <- 2/4
+priv$worriedAboutFed[priv$PRIV4B == 2] <- 3/4
+priv$worriedAboutFed[priv$PRIV4B == 1] <- 1
+
+attributes(priv$PRIV4B)
+priv$worriedAboutFed.re[priv$PRIV4B == 5 | priv$PRIV4B == 4] <- 0
+priv$worriedAboutFed.re[priv$PRIV4B == 3 | priv$PRIV4B == 2 | priv$PRIV4B == 1] <- 1
+
+attributes(priv$PRIV10B)
+
+priv$responsibilityFed[priv$PRIV10B == 5] <- 0
+priv$responsibilityFed[priv$PRIV10B == 4] <- 1/4
+priv$responsibilityFed[priv$PRIV10B == 3] <- 2/4
+priv$responsibilityFed[priv$PRIV10B == 2] <- 3/4
+priv$responsibilityFed[priv$PRIV10B == 1] <- 1
+
+
+#6. (Now, thinking about who should be responsible for protecting the privacy of social media users...How much responsibility should each of the following have for protecting the privacy of social media users?...Very large, large, moderate, small, none at all)...The federal government
+# dat$responsibilityFed.f <- NA
+priv$responsibilityFed.f[priv$PRIV10B == 5] <- "None at all"
+priv$responsibilityFed.f[priv$PRIV10B == 4] <- "Small"
+priv$responsibilityFed.f[priv$PRIV10B == 3] <- "Moderate"
+priv$responsibilityFed.f[priv$PRIV10B == 2] <- "Large"
+priv$responsibilityFed.f[priv$PRIV10B == 1] <- "Very Large"
+
+# password change for every account
+attributes(priv$PRIV7A)
+priv$passwordHabits[priv$PRIV7A == 5] <- 0
+priv$passwordHabits[priv$PRIV7A == 4] <- 1/4
+priv$passwordHabits[priv$PRIV7A == 3] <- 1/2
+priv$passwordHabits[priv$PRIV7A == 2] <- 3/4
+priv$passwordHabits[priv$PRIV7A == 1] <- 1
+
+# selling data
+attributes(priv$PRIV11)
+
+priv$sellData[priv$PRIV11 == 1] <- 0
+priv$sellData[priv$PRIV11 == 2] <- 1
+
+```
+
+
+```{r}
+# write some controls: age, PID, and education
+
+
+priv$PID <- NA
+# code democrats as a 0
+
+attributes(priv$politics)
+priv$democrat <- 0
+priv$democrat[priv$politics == 1] <- 1
+
+priv$independent <- 0
+priv$independent[priv$politics == 3] <- 1
+
+priv$republican <- 0
+priv$republican[priv$politics == 2] <- 1
+
+priv$PID[priv$politics == 1] <- 0
+priv$PID[priv$politics == 3] <- 1/2
+priv$PID[priv$politics ==2] <- 1
+
+priv$PID <- factor(priv$PID, levels = c(.5, 0, 1))
+
+#create factor variable for age
+
+priv$age <- NA
+priv$age[priv$agegrp ==1] <- "18-29"
+priv$age[priv$agegrp ==2] <- "30-39"
+priv$age[priv$agegrp ==3] <- "40-59"
+priv$age[priv$agegrp ==4] <- "60-64"
+priv$age[priv$agegrp ==5] <- "65+"
+
+#create factor variable for education
+priv$education <- NA
+priv$education[priv$educatio ==1] <- "Less than high school graduate"
+priv$education[priv$educatio ==2] <- "High school graduate or equivalent"
+priv$education[priv$educatio ==3] <- "Some college"
+priv$education[priv$educatio ==4] <- "College graduate"
+
+
+```
+
+Recode Age for Descriptive Table
+```{r}
+priv$age18to29 <- 0
+priv$age18to29[priv$agegrp ==1] <- 1
+
+priv$age30to39 <- 0
+priv$age30to39[priv$agegrp ==2] <- 1
+
+priv$age40to59 <- 0
+priv$age40to59[priv$agegrp ==3] <- 1
+
+priv$age60to64 <- 0
+priv$age60to64[priv$agegrp ==4] <- 1
+
+priv$age65plus <- 0
+priv$age65plus[priv$agegrp ==5] <- 1
+```
+Recode education for Descriptive Statistics
+```{r}
+
+
+priv$educationLessThanHighSchool <- 0
+priv$educationLessThanHighSchool[priv$educatio ==1] <- 1
+
+priv$educationHighSchoolGraduateOrEquivalent <- 0
+priv$educationHighSchoolGraduateOrEquivalent[priv$educatio ==2] <- 1
+
+priv$educationSomeCollege <- 0
+priv$educationSomeCollege[priv$educatio ==3] <- 1
+
+priv$educationCollegeGraduate <- 0
+priv$educationCollegeGraduate[priv$educatio ==4] <- 1
+
+```
+
+Releveling Use Variables
+```{r}
+priv$twitterRegression <- factor(priv$twitterUse.f.f, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+priv$snapRegression <- factor(priv$snapUse.f.f, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+priv$redditRegression <- factor(priv$redditUse.f.f, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+priv$whatsRegression <- factor(priv$whatsUse.f.f, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+priv$instaRegression <- factor(priv$instaUse.f.f, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+
+
+priv$education.f <- factor(priv$education, levels = c("High school graduate or equivalent", "Less than high school graduate", "Some college", "College graduate"))
+table(priv$education.f)
+```
+
+Standard Deviation of Dependent Variable
+```{r}
+withoutNAsResponsibilityFed <- na.omit(priv$responsibilityFed)
+mean(withoutNAsResponsibilityFed)
+sd(withoutNAsResponsibilityFed)
+
+
+table(priv$polySocialMediaUsage)
+mean(priv$polySocialMediaUsage)
+sd(priv$polySocialMediaUsage)
+# , effect size is calculated by taking the difference between the two groups
+mean(priv$polySocialMediaUsage)
+```
+```{r}
+# Compares 
+firstRegression <- lm(securingPersonalInfo~hasSocialMedia, data = priv)
+summary(firstRegression)
+
+#statisticall significant but misleading coding
+# secondRegression <-lm(worriedAboutFed.re~hasSocialMedia, data = priv)
+# summary(secondRegression)
+
+thirdRegression <-lm(responsibilityFed~hasSocialMedia, data = priv)
+summary(thirdRegression)
+
+# priv$worriedAboutFed.re.na <- na.omit(priv$worriedAboutFed)
+# priv$hasSocialMedia.na <- na.omit(priv$hasSocialMedia)
+
+worriedAboutFedAndAverageSocialMediaAccounts <- lm(worriedAboutFed~hasSocialMedia + age + PID + education, data = priv)
+summary(worriedAboutFedAndAverageSocialMediaAccounts)
+
+# facebookUse.re.naOmit <- na.omit(dat$facebookUse.re)
+# fourthRegression <- lm(responsibilityFed~poly(facebookUse.re.naOmit), data = dat)
+# summary(fourthRegression)
+
+fifthRegression <- lm(responsibilityFed~hasSocialMedia + age + PID + educatio, data = priv)
+summary(fifthRegression)
+
+sixthRegression <- lm(responsibilityFed~educatio, data = priv)
+summary(sixthRegression)
+
+# Key Dependent Variables:priv$responsibilityFed; priv$securingPersonalInfo; priv$worriedAboutFed
+
+priv$fbRegression <- factor(priv$facebookUse.f.f, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+
+# THIS IS A BAD ONE
+SocialMediaAndResponsibilityFed <- lm(responsibilityFed~socialMediaUsage + age + PID + education, data = priv)
+summary(SocialMediaAndResponsibilityFed)
+
+
+# THIS IS A GOOD ONE
+SocialMediaAccountsAndResponsibilityFed <- lm(responsibilityFed~hasSocialMedia + age + PID + education, data = priv)
+summary(SocialMediaAccountsAndResponsibilityFed)
+
+
+
+HasSocialMediaAndResponsibilityFed <- lm(responsibilityFed~hasSocialMedia + age + PID + education + numberOfAccounts, data = priv)
+summary(HasSocialMediaAndResponsibilityFed)
+
+IndividualAndResponsibilityFed <- lm(responsibilityFed~facebookUse.re + twitterUse.re + instaUse.re + snapUse.re + whatsUse.re + redditUse.re +  age + PID + education, data = priv)
+summary(IndividualAndResponsibilityFed)
+
+facebookAndSecuringPersonalInfo <- lm(securingPersonalInfo~fbRegression + age + PID + education, data = priv)
+summary(facebookAndSecuringPersonalInfo)
+
+facebookAndWorriedAboutFed <- lm(worriedAboutFed~fbRegression + age + PID + education, data = priv)
+summary(facebookAndWorriedAboutFed)
+
+# priv$fbOmitNa <- na.omit(as.numeric(priv$facebookUse.re))
+
+```
+Robust Standard Error
+-> copy and pasted: "“Robust” standard errors is a technique to obtain unbiased standard errors of OLS coefficients under heteroscedasticity"
+```{r}
+coeftest(HasSocialMediaAndResponsibilityFed, vcov = vcovHC(HasSocialMediaAndResponsibilityFed, type="HC3"))
+```
+Logit
+```{r}
+# SocialMediaAccountsAndResponsibilityFed <- lm(responsibilityFed~hasSocialMedia + age + PID + education, data = priv)
+# summary(SocialMediaAccountsAndResponsibilityFed)
+# output <- glm(responsibilityFed~hasSocialMedia + age + PID + education, family=binomial(link="logit"), data = priv)
+# summary(output)
+
+```
+Poly Regressions
+```{r}
+priv$fbOmitNa <- priv$facebookUse.re
+priv$fbOmitNa[is.na(priv$facebookUse.re)] <- 0
+priv$polyFb <- poly(priv$fbOmitNa, degree = 2, raw = TRUE)
+
+polyFbAndResponsibilityFed <- lm(responsibilityFed~polyFb + age + PID + education, data = priv)
+summary(polyFbAndResponsibilityFed)
+
+priv$socialMediaUsagePoly <- priv$socialMediaUsage
+priv$socialMediaUsagePoly[is.na(priv$socialMediaUsage)] <- 0
+priv$polySocialMediaUsage <- poly(priv$socialMediaUsagePoly, degree = 3, raw = TRUE)
+
+polySocialMediaAndResponsibilityFed <- lm(responsibilityFed~polySocialMediaUsage + age + PID + education.f, data = priv)
+summary(polySocialMediaAndResponsibilityFed)
+
+# eigthRegressino <- lm(responsibilityFed~(relevel(facebookUse.f, ref = "Never")), data = dat) 
+
+# eigthRegression <- lm(responsibilityFed~facebookUse.f.f, data = dat)
+# summary(eightRegression)
+
+# ninthRegression <- lm(responsibilityFed~facebookUse.re + agegrp + PID + educatio, data = dat)
+# summary(seventhRegression)
+```
+New Regression Chunk for Clarity
+# two key dependent var: responsibility Fed and wrry about Fed
+# two key independent var: how many social media accounts you have 
+```{r}
+#This is good
+responsibilityAndAverageSocialMediaAccountHaver <- lm(responsibilityFed~hasSocialMedia, data = priv)
+summary(responsibilityAndAverageSocialMediaAccountHaver)
+# MV
+responsibilityAndAverageSocialMediaAccountHaverMV <- lm(responsibilityFed~hasSocialMedia + age + PID + education.f + cambridgeAnalytica, data = priv)
+summary(responsibilityAndAverageSocialMediaAccountHaverMV)
+#coeftest
+responsibilityAndAverageSocialMediaAccountHaverRobustB <- coeftest(responsibilityAndAverageSocialMediaAccountHaver, vcov = vcovHC(responsibilityAndAverageSocialMediaAccountHaver, type="HC3"))
+responsibilityAndAverageSocialMediaAccountHaverRobust <- coeftest(responsibilityAndAverageSocialMediaAccountHaverMV, vcov = vcovHC(responsibilityAndAverageSocialMediaAccountHaverMV, type="HC3"))
+
+#^ this regression will be in the paper
+
+# social Media usage p value .21
+responsibilityAndAverageSocialMediaUsage <- lm(responsibilityFed~socialMediaUsage, data = priv)
+summary(responsibilityAndAverageSocialMediaUsage)
+#MV
+responsibilityAndAverageSocialMediaUsageMV <- lm(responsibilityFed~socialMediaUsage + age + PID + education.f + numberOfAccounts + cambridgeAnalytica, data = priv)
+summary(responsibilityAndAverageSocialMediaUsageMV)
+#coef
+responsibilityAndAverageSocialMediaUsageRobustB <- coeftest(responsibilityAndAverageSocialMediaUsage, vcov = vcovHC(responsibilityAndAverageSocialMediaUsage, type="HC3"))
+responsibilityAndAverageSocialMediaUsageRobust <- coeftest(responsibilityAndAverageSocialMediaUsageMV, vcov = vcovHC(responsibilityAndAverageSocialMediaUsageMV, type="HC3"))
+
+# FB,SNAP TWITTER INSTA WHATS
+# responsibilityAndIndividualUse <- lm(responsibilityFed~facebookUse + snapUse + twitterUse + instaUse + redditUse + whatsUse, data = priv)
+# summary(responsibilityAndIndividualUse)
+# coeftest(responsibilityAndIndividualUse, vcov = vcovHC(responsibilityAndIndividualUse, type="HC3"))
+# #MV
+# responsibilityAndIndividualUseMV <- lm(responsibilityFed~facebookUse + snapUse + twitterUse + instaUse + redditUse + whatsUse + age + PID + education + cambridgeAnalytica, data = priv)
+# summary(responsibilityAndIndividualUseMV)
+# #coeftest
+# polySocialMediaAndFedResponsibilityRobust <- coeftest(responsibilityAndIndividualUseMV, vcov = vcovHC(responsibilityAndIndividualUseMV, type="HC3"))
+
+
+# POLY
+polySocialMediaAndFedResponsibility <- lm(responsibilityFed~polySocialMediaUsage, data = priv)
+summary(polySocialMediaAndFedResponsibility)
+polySocialMediaAndFedResponsibilityMV <- lm(responsibilityFed~polySocialMediaUsage + age + PID + education.f + numberOfAccounts + cambridgeAnalytica, data = priv)
+summary(polySocialMediaAndFedResponsibilityMV)
+#coeftest
+polySocialMediaAndFedResponsibilityRobustB <- coeftest(polySocialMediaAndFedResponsibility, vcov = vcovHC(polySocialMediaAndFedResponsibility, type="HC3"))
+summary(polySocialMediaAndFedResponsibilityRobustB)
+polySocialMediaAndFedResponsibilityRobust <-coeftest(polySocialMediaAndFedResponsibilityMV, vcov = vcovHC(polySocialMediaAndFedResponsibilityMV, type="HC3"))
+```
+Clarity with Other DVs
+```{r}
+#This is good
+a <- lm(responsibilitySM~hasSocialMedia + age + PID + education.f + cambridgeAnalytica, data = priv)
+summary(a)
+#^ this regression will be in the paper
+
+# social Media usage p value .21
+b <- lm(responsibilitySM~socialMediaUsage + age + PID + education.f + numberOfAccounts + cambridgeAnalytica, data = priv)
+summary(b)
+
+
+c <- lm(responsibilitySM~facebookUse + snapUse + twitterUse + instaUse + redditUse + whatsUse + age + PID + education + cambridgeAnalytica, data = priv)
+summary(c)
+coeftest(c, vcov = vcovHC(c, type="HC3"))
+
+d <- lm(responsibilitySM~polySocialMediaUsage + age + PID + education.f + numberOfAccounts + cambridgeAnalytica, data = priv)
+summary(d)
+```
+Securing personal info
+```{r}
+# e <- lm(securingPersonalInfo~hasSocialMedia + age + PID + education.f + cambridgeAnalytica, data = priv)
+# summary(e)
+# #^ this regression will be in the paper
+# 
+# # social Media usage p value .21
+# f <- lm(securingPersonalInfo~socialMediaUsage + age + PID + education.f + numberOfAccounts + cambridgeAnalytica, data = priv)
+# summary(f)
+
+
+g <- lm(securingPersonalInfo~facebookUse + snapUse + twitterUse + instaUse + redditUse + whatsUse + age + PID + education + cambridgeAnalytica, data = priv)
+summary(g)
+coeftest(c, vcov = vcovHC(c, type="HC3"))
+
+# h <- lm(securingPersonalInfo~polySocialMediaUsage + age + PID + education.f + numberOfAccounts + cambridgeAnalytica, data = priv)
+# summary(h)
+```
+
+Bad regressions
+```{r}
+#throwing all my dv's on hasSocialMedia
+#trash
+# takeOne <- lm(worriedAboutFed~hasSocialMedia, data = priv)
+# summary(takeOne)
+# takeTwo <- lm(responsibilityFed~hasSocialMedia, data = priv)
+# summary(takeTwo)
+# takeThree <- lm(priv$securingPersonalInfo~hasSocialMedia, data = priv)
+# summary(takeThree)
+# takeFour <- lm(sellData~hasSocialMedia, data = priv)
+# summary(takeFour)
+# 
+# # Garbage
+# habitsAndAverageSocialMediaAccountHaver <- lm(passwordHabits~ socialMediaUsage + age + PID + education, data = priv)
+# summary(habitsAndAverageSocialMediaAccountHaver)
+# 
+# 
+# #This not statistically significant
+# worryAboutFedAndAverageSocialMediaAccountHaver <- lm(worriedAboutFed~hasSocialMedia + socialMediaUsage + age + PID + education, data = priv)
+# summary(worryAboutFedAndAverageSocialMediaAccountHaver)
+# 
+# # not statistically significant
+# privacyAndAverageSocialMediaAccountHaver <- lm(securingPersonalInfo~hasSocialMedia + age + PID + education, data = priv)
+# summary(privacyAndAverageSocialMediaAccountHaver)
+# 
+# responsibilityAndAverageSocialMediaAccountHaver <- lm(responsibilityFed~socialMediaUsage.small + age + PID + education, data = priv)
+# summary(responsibilityAndAverageSocialMediaAccountHaver)
+# 
+# # Statistically significant and interesting find about whether somebody has a snapchat account
+# 
+# #^ should go in the paper
+# 
+# 
+# responsibilityAndUse <- lm(responsibilityFed~fbRegression + twitterRegression + snapRegression + instaRegression + 
+#                              whatsRegression + redditRegression + age + PID + education, data = priv)
+# summary(responsibilityAndUse)
+
+```
+# ordered not numerical; we can make assumptions bc increase social media use + responsibility
+
+OLS Predicted Values
+```{r}
+# privPredict <- NA
+# privPredict$predictedvalues_ols <- predict(facebookAndResponsibilityFed)  
+# summary(dat$predictedvalues_ols)
+# 
+# belowzero <- subset(dat, predictedvalues_ols < 0) 
+
+```
+
+Probit
+```{r}
+output2 <- glm(securingPersonalInfo ~ fbRegression + age + PID + education, family=binomial(link="probit"), 
+               data = priv)
+
+# securingPersonalInfo~fbRegression + age + PID + education, data = priv
+summary(output2)
+```
+
+Descriptive Statistics Text
+```{r results='asis'}
+descriptives <- priv %>% select(hasSocialMedia, socialMediaUsage, facebookUse.re, twitterUse.re, snapUse.re, whatsUse.re, instaUse.re, redditUse.re, democrat, republican, independent, age18to29, age30to39, age40to59, age60to64, age65plus, educationLessThanHighSchool, educationHighSchoolGraduateOrEquivalent, educationSomeCollege, educationCollegeGraduate, numberOfAccounts, cambridgeAnalytica, responsibilityFed)
+stargazer(as.data.frame(descriptives), type='text', summary.stat = c("n", "mean", "sd", "min", "median", "max"), digits = 2)
+
+```
+
+Descriptive Statistics HTML
+```{r results = 'asis'}
+attributes(descriptives)
+stargazer(as.data.frame(descriptives), type='html', summary.stat = c("n", "mean", "sd", "min", "median", "max"), title='Table of Descriptive Statistics',
+         covariate.labels = c("Average of Number of Social Media Accounts","Average of Social Media Usage", "Facebook Use","Twitter Use", "Snapchat Use", "WhatsApp Use", "Instagram Use", "Reddit Use", 
+                              "Democrat","Republican","Independent","Age 18-29", "Age 30-39", "Age 40-59", "Age 60-64", "Age 65 or More",
+                              "Less than High School Education","High School Graduate or Equivalent","Some College Education", "College Graduate", "Number of Accounts", "Knowledge of the Cambridge Analytica Scandal", "Government Responsibility to Protect Privacy"), digits=2)
+```
+
+
+
+# Histogram attempt
+```{r}
+hist(priv$hasSocialMedia)
+plot(priv$hasSocialMedia)
+# hist discrete and continuous ; density useful for continuous
+# ggplot make figures and gives more control
+ggplot(aes(x=hasSocialMedia), data=priv)+
+  geom_histogram(aes(y=..density..), bins=10)+
+  geom_density(fill='red', alpha=.3)
+```
+
+Linear Attempt
+```{r}
+# ggplot(aes(x=hasSocialMedia, y=worriedAboutFed), data=priv)+
+#   geom_point()+
+#   geom_smooth(method='lm') #Makes a plot of police x BLM FT ratings and shows the linear relationship between the two variables
+```
+
+Boxplot Attempt
+```{r}
+
+
+table(priv$hasSocialMedia)
+# boxplot(priv$worriedAboutFed~priv$hasSocialMedia,
+#         xlab="Facebook Use",
+#         names=c("Have no Accounts (0)", ".16", ".33", ".4 ", "Half of the Accounts(.5)", "Almost constantly"),
+#         main="Concern about Government Access to Personal Information Online vs. Level of Facebook Use",
+#         ylab="Level Of Concern about Govt Access to Information Shared Online")
+# 
+# boxplot(priv$worriedAboutFed~priv$hasSocialMedia,
+#         xlab = "Number Of Accounts",
+#         main="Concern about Government Access to Personal Information Online vs. Level of Facebook Use",
+#         ylab="Worried About Fed")
+# 
+# ggplot(aes(x=hasSocialMedia, y=responsibilityFed, group=hasSocialMedia, fill = hasSocialMedia), data=priv[!is.na(priv$hasSocialMedia),])+
+#   geom_boxplot()+
+#   scale_fill_manual(name="Responsibility Fed")+
+#   ylab("Masking Average")+
+#   xlab("Cohabitation with a Child under 12")+
+#   ggtitle(label="Tendency to Mask by Living with a Child who cannot be vaccinated", 
+#           subtitle = "The Behavioral Impact of Living with Someone who cannot be vaccinated")+
+#   theme_bw()
+
+ggplot(aes(x=numberOfAccounts, y=responsibilityFed, group=numberOfAccounts, fill = numberOfAccounts), data=priv[!is.na(priv$numberOfAccounts),])+
+  geom_boxplot()+
+  ylab("Opinion of Federal Responsibility in Protecting Privacy\n(Greater level is greater responsibility)\n")+
+  labs(fill = "Account Number")+
+  xlab("Number of Social Media Accounts")+
+  ggtitle(label="Opinion that the Government Should Protect One's Privacy by Number of Owned Social Media Accounts", 
+          subtitle = "The Impact of Using Social Media on Weighing Privacy")
+
+# ggplot(aes(x=hasSocialMedia, y=responsibilityFed, group=hasSocialMedia, fill = hasSocialMedia), data=priv[!is.na(priv$hasSocialMedia),])+
+#   geom_boxplot()+
+#   ylab("Masking Average")+
+#   xlab("Cohabitation with a Child under 12")+
+#   ggtitle(label="Tendency to Mask by Living with a Child who cannot be vaccinated", 
+#           subtitle = "The Behavioral Impact of Living with Someone who cannot be vaccinated")+
+#   theme_bw()
+
+```
+BarChart Attempt
+```{r}
+priv$use.twitter <- priv$twitterUse.f.f
+priv$use.fb <- priv$facebookUse.f.f
+priv$use.fb <- priv$facebookUse.f
+priv$use.snap <- priv$snapUse.f.f
+priv$use.whats <- priv$whatsUse.f.f
+priv$use.insta <- priv$instaUse.f.f
+priv$use.reddit <- priv$redditUse.f
+
+datDummy <- priv %>% 
+        dplyr::select(responsibilityFed, use.fb, use.twitter, use.snap, use.whats, use.insta, use.reddit) %>%
+        tidyr::pivot_longer(-responsibilityFed, names_to = c(".value", "platform"), names_sep = "\\.") %>%
+        group_by(platform, use) %>%
+        summarize(opinionFedPrivacy = mean(responsibilityFed, na.rm = T)) %>%
+        na.omit()
+
+datDummy$use <- factor(datDummy$use, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+
+datDummy2 <- priv %>% 
+        dplyr::select(worriedAboutFed, use.fb, use.twitter, use.snap, use.whats, use.insta, use.reddit) %>%
+        tidyr::pivot_longer(-worriedAboutFed, names_to = c(".value", "platform"), names_sep = "\\.") %>%
+        group_by(platform, use) %>%
+        summarize(worriedAboutFedPriv = mean(worriedAboutFed, na.rm = T)) %>%
+        na.omit()
+
+datDummy2$use <- factor(datDummy$use, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+
+datDummy3 <- priv %>% 
+        dplyr::select(securingPersonalInfo, use.fb, use.twitter, use.snap, use.whats, use.insta, use.reddit) %>%
+        tidyr::pivot_longer(-securingPersonalInfo, names_to = c(".value", "platform"), names_sep = "\\.") %>%
+        group_by(platform, use) %>%
+        summarize(securingPersonalInfoPriv = mean(securingPersonalInfo, na.rm = T)) %>%
+        na.omit()
+
+datDummy3$use <- factor(datDummy$use, levels = c("Never", "Less often", "At least once a week", "Once a day", "Several times a day", "Almost constantly"))
+
+colors = c("blue", "purple", "red", "yellow", "cyan", "green")
+
+ggplot(datDummy, aes(x=use, y=opinionFedPrivacy, fill = platform, group = platform)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ylab("Opinion of Federal Responsibility in Protecting Privacy\n(Greater level is greater responsibility)\n")+
+  xlab("Social Media Use")+
+  labs(fill = "Social Media Services")+
+  scale_fill_manual(values = colors,
+                    labels = c("Facebook", "Instagram", "Reddit", "Snapchat", "Twitter", "WhatsApp"),
+                    guide = guide_legend(reverse = FALSE)) +
+  ggtitle(label="Opinion of Federal Government Responsibility in Protecting Privacy vs. Level of Social Media Use") 
+
+ggplot(datDummy2, aes(x=use, y=worriedAboutFedPriv, fill = platform, group = platform)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ylab("Worry about Fed Govt having Access to your Data")+
+  xlab("Social Media Use")+
+  labs(fill = "Social Media Services")+
+  scale_fill_manual(values = colors,
+                    labels = c("Facebook", "Instagram", "Reddit", "Snapchat", "Twitter", "WhatsApp"),
+                    guide = guide_legend(reverse = FALSE)) +
+  ggtitle(label="Opinion of Federal Government Responsibility in Protecting Privacy vs. Level of Social Media Use")
+
+ggplot(datDummy3, aes(x=use, y=securingPersonalInfoPriv, fill = platform, group = platform)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ylab("Worry about Fed Govt having Access to your Data")+
+  xlab("Social Media Use")+
+  labs(fill = "Social Media Services")+
+  scale_fill_manual(values = colors,
+                    labels = c("Facebook", "Instagram", "Reddit", "Snapchat", "Twitter", "WhatsApp"),
+                    guide = guide_legend(reverse = FALSE)) +
+  ggtitle(label="Opinion of Federal Government Responsibility in Protecting Privacy vs. Level of Social Media Use")
+
+```
+
+Stargazer Regression
+```{r results='asis'}
+summary(responsibilityAndAverageSocialMediaAccountHaver)
+summary(responsibilityAndAverageSocialMediaAccountHaverMV)
+# number of accounts
+stargazer(responsibilityAndAverageSocialMediaAccountHaver, responsibilityAndAverageSocialMediaAccountHaverRobustB, responsibilityAndAverageSocialMediaAccountHaverMV, responsibilityAndAverageSocialMediaAccountHaverRobust,
+          type='html', 
+          covariate.labels = c("Average Number of Social Media Accounts", "Age 30-39", "Age 40-59", "Age 60-64", "Age 65 or More", "Democrat", "Republican", "Less than High School Graduate", "Some College", "College Graduate", "Knowledge of Cambridge Analytica Scandal"), 
+          dep.var.labels = c("Bivariate Regression", "Multivariate Regression"), 
+          star.cutoffs = c(.05, .01, .001), 
+          title = "OLS Model Predicting Effect of Owning Social Media Accounts on Federal Responsibility to Protect Privacy", 
+          digits = 3)
+
+
+#use
+stargazer(responsibilityAndAverageSocialMediaUsage, responsibilityAndAverageSocialMediaUsageRobustB, responsibilityAndAverageSocialMediaUsageMV, responsibilityAndAverageSocialMediaUsageRobust,
+          type='html', 
+          covariate.labels = c("Average Use of Social Media Accounts", "Age 30-39", "Age 40-59", "Age 60-64", "Age 65 or More", "Democrat", "Republican", "Less than High School Graduate", "Some College", "College Graduate", "Number Of Accounts", "Knowledge of Cambridge Analytica Scandal"), 
+          dep.var.labels = c("Bivariate Regression", "Multivariate Regression", "Robust Standard Error"), 
+          star.cutoffs = c(.05, .01, .001), 
+          title = "OLS Model Predicting Effect of Social Media Usage on Federal Responsibility to Protect Privacy", 
+          digits = 3)
+
+#poly
+summary(polySocialMediaAndFedResponsibilityMV)
+stargazer(polySocialMediaAndFedResponsibility, polySocialMediaAndFedResponsibilityRobustB, polySocialMediaAndFedResponsibilityMV, polySocialMediaAndFedResponsibilityRobust,
+          type='html', 
+          covariate.labels = c("Average Usage Linear Coefficient", "Average Usage Quadratic Coefficient","Average Usage Cubic Coefficient", "Age 30-39", "Age 40-59", "Age 60-64", "Age 65 or More", "Democrat", "Republican", "Less than High School Graduate", "Some College", "College Graduate", "Number Of Accounts", "Knowledge of Cambridge Analytica Scandal"), 
+          dep.var.labels = c("Bivariate Regression", "Multivariate Regression","Robust Standard Error"), 
+          star.cutoffs = c(.1, .05, .01, .001), 
+          title = "OLS Model of the Cubic Curvilinear Relationship on the Effect of Social Media Usage on Federal Responsibility to Protect Privacy", 
+          digits = 3)
+```
+```
